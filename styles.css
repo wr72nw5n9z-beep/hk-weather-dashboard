@@ -171,8 +171,9 @@ button, input, select { font: inherit; color: inherit; }
 }
 .topbar__inner {
   display: flex; align-items: center; justify-content: space-between;
-  gap: var(--space-md); min-height: 64px; padding-block: var(--space-sm); flex-wrap: wrap;
+  gap: var(--space-sm); min-height: 52px; padding-block: 8px; flex-wrap: wrap;
 }
+.brand h1 { font-size: var(--text-md); line-height: 1.2; margin: 0; font-weight: 600; }
 .brand { display: flex; align-items: baseline; gap: var(--space-sm); min-width: 0; }
 .brand__mark {
   width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0;
@@ -421,11 +422,40 @@ button, input, select { font: inherit; color: inherit; }
 @media (max-width: 40rem) {
   :root { --gutter: 16px; --text-hero-num: 2.65rem; --control-height: 44px; }
   body { padding-bottom: env(safe-area-inset-bottom, 0); }
-  .topbar__inner { align-items: stretch; }
-  .toolbar { width: 100%; }
-  .toolbar .select, .toolbar .btn { flex: 1; }
-  .theme-chip { flex: 1; text-align: center; }
-  .status-readout { width: 100%; justify-content: center; }
+  .topbar__inner {
+    align-items: center;
+    flex-wrap: nowrap;
+    min-height: 44px;
+    padding-block: 6px;
+    gap: 8px;
+  }
+  .brand { flex: 1; min-width: 0; }
+  .brand__mark { width: 8px; height: 8px; }
+  .brand h1 { font-size: 1rem; letter-spacing: 0; }
+  .brand__subtitle { display: none; }
+  .toolbar {
+    width: auto;
+    flex-wrap: nowrap;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .status-readout,
+  .theme-chip { display: none; }
+  .toolbar .select {
+    flex: 0 1 auto;
+    max-width: 7.5rem;
+    font-size: var(--text-xs);
+    min-height: 36px;
+    height: 36px;
+    padding-inline: 8px;
+  }
+  .toolbar .btn {
+    flex: 0 0 auto;
+    min-height: 36px;
+    height: 36px;
+    padding-inline: 10px;
+    font-size: var(--text-xs);
+  }
   .obs-hero { padding: var(--space-md); }
   .obs-hero__range { text-align: left; width: 100%; }
   .kpi-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
