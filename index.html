@@ -20,29 +20,28 @@
         </div>
       </div>
       <div class="toolbar">
-        <div class="status-readout" id="statusReadout" data-state="loading" aria-live="polite">
-          <span class="status-readout__dot" aria-hidden="true"></span>
-          <span id="statusText">載入緊…</span>
-        </div>
-        <label class="select-wrap" for="themeMode">
-          <span class="visually-hidden">日夜模式</span>
-          <select class="select" id="themeMode" title="日夜模式">
-            <option value="auto" selected>跟時間</option>
-            <option value="day">日間</option>
-            <option value="night">夜間</option>
-          </select>
-        </label>
-        <span class="theme-chip" id="themeChip" aria-live="polite">日間</span>
-        <button type="button" class="btn btn--primary" id="refreshBtn">更新</button>
+        <button type="button" class="theme-toggle" id="themeToggle" aria-label="轉做夜間">
+          <svg class="theme-toggle__sun" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.75" />
+            <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+          </svg>
+          <svg class="theme-toggle__moon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path d="M16 3.2A8.5 8.5 0 1 0 20.8 14 7 7 0 0 1 16 3.2z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <button type="button" class="refresh-btn" id="refreshBtn" data-state="idle" aria-live="polite">
+          <span class="refresh-btn__dot" aria-hidden="true"></span>
+          <span id="statusText">更新</span>
+        </button>
       </div>
     </div>
   </header>
 
   <nav class="cat-nav" aria-label="內容分類">
-    <div class="container cat-nav__inner">
-      <a class="cat-nav__link" href="#now">而家</a>
-      <a class="cat-nav__link" href="#forecast">九天</a>
-      <a class="cat-nav__link" href="#districts">分區</a>
+    <div class="container cat-nav__inner" role="tablist">
+      <button type="button" class="cat-nav__link is-active" id="tab-now" role="tab" data-view="now" aria-controls="now" aria-selected="true">而家</button>
+      <button type="button" class="cat-nav__link" id="tab-forecast" role="tab" data-view="forecast" aria-controls="forecast" aria-selected="false">九天</button>
+      <button type="button" class="cat-nav__link" id="tab-districts" role="tab" data-view="districts" aria-controls="districts" aria-selected="false">分區</button>
     </div>
   </nav>
 
@@ -52,12 +51,7 @@
       <button type="button" class="btn" id="errorRetry">再試</button>
     </div>
 
-    <section id="now" class="category" aria-labelledby="nowTitle">
-      <div class="category__head">
-        <h2 id="nowTitle" class="category__title">而家天氣</h2>
-        <p class="category__sub">即時觀測 · 警告 · 概況</p>
-      </div>
-
+    <section id="now" class="category" role="tabpanel" aria-labelledby="tab-now">
       <section id="warningStrip" class="warning-strip warning-strip--calm" hidden>
         <div class="warning-strip__head">
           <h2 class="warning-strip__title">天氣警告</h2>
@@ -123,11 +117,7 @@
       </section>
     </section>
 
-    <section id="forecast" class="category" aria-labelledby="fndTitle">
-      <div class="category__head">
-        <h2 id="fndTitle" class="category__title">未來九天</h2>
-        <p class="category__sub">溫度帶顯示當日高低溫區間</p>
-      </div>
+    <section id="forecast" class="category" role="tabpanel" aria-labelledby="tab-forecast" hidden>
       <div class="section-block">
         <div class="section-block__head">
           <div class="legend-inline" aria-hidden="true">
@@ -143,11 +133,7 @@
       </div>
     </section>
 
-    <section id="districts" class="category" aria-labelledby="districtsTitle">
-      <div class="category__head">
-        <h2 id="districtsTitle" class="category__title">分區觀測</h2>
-        <p class="category__sub">自動氣象站氣溫 · 一小時雨量</p>
-      </div>
+    <section id="districts" class="category" role="tabpanel" aria-labelledby="tab-districts" hidden>
       <section class="secondary-grid" aria-label="分區表格">
         <article class="section-block station-block">
           <div class="section-block__head">
@@ -197,6 +183,23 @@
       </section>
     </section>
   </main>
+
+  <script>
+    (function () {
+      var ids = ['now', 'forecast', 'districts'];
+      var id = (location.hash || '').replace('#', '');
+      if (ids.indexOf(id) === -1) id = 'now';
+      ids.forEach(function (name) {
+        var el = document.getElementById(name);
+        if (el) el.hidden = name !== id;
+      });
+      document.querySelectorAll('.cat-nav__link').forEach(function (btn) {
+        var on = btn.getAttribute('data-view') === id;
+        btn.classList.toggle('is-active', on);
+        btn.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+    })();
+  </script>
 
   <footer class="footer">
     <div class="container footer__inner">

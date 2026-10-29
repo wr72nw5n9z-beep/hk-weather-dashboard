@@ -21,35 +21,34 @@ function autoTheme() {
   return minutes >= 6 * 60 + 30 && minutes < 18 * 60 + 30 ? 'day' : 'night';
 }
 
+function savedThemeMode() {
+  const saved = localStorage.getItem(THEME_STORAGE);
+  return saved === 'day' || saved === 'night' || saved === 'auto' ? saved : 'auto';
+}
+
 function applyTheme() {
-  const modeEl = $('themeMode');
-  const mode = modeEl?.value || localStorage.getItem(THEME_STORAGE) || 'auto';
-  if (modeEl && modeEl.value !== mode) modeEl.value = mode;
+  const mode = savedThemeMode();
   const theme = mode === 'auto' ? autoTheme() : mode;
   document.body.dataset.theme = theme;
-  const chip = $('themeChip');
-  if (chip) {
-    const clock = hkParts();
-    const hh = String(clock.hour).padStart(2, '0');
-    const mm = String(clock.minute).padStart(2, '0');
-    chip.textContent = theme === 'day'
-      ? `日間 · 香港 ${hh}:${mm}`
-      : `夜間 · 香港 ${hh}:${mm}`;
+  const toggle = $('themeToggle');
+  if (toggle) {
+    toggle.setAttribute('aria-label', theme === 'day' ? '轉做夜間' : '轉做日間');
   }
 }
 
 function initTheme() {
-  const modeEl = $('themeMode');
-  const saved = localStorage.getItem(THEME_STORAGE) || 'auto';
-  if (modeEl) {
-    modeEl.value = saved;
-    modeEl.addEventListener('change', () => {
-      localStorage.setItem(THEME_STORAGE, modeEl.value);
+  const toggle = $('themeToggle');
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      const current = document.body.dataset.theme === 'night' ? 'night' : 'day';
+      localStorage.setItem(THEME_STORAGE, current === 'day' ? 'night' : 'day');
       applyTheme();
     });
   }
   applyTheme();
-  setInterval(applyTheme, 60 * 1000);
+  setInterval(() => {
+    if (savedThemeMode() === 'auto') applyTheme();
+  }, 60 * 1000);
 }
 
 const API = {
@@ -71,6 +70,13 @@ function formatHk(iso) {
     year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', hour12: false,
   }).format(d);
+}
+
+function formatHkClock(date) {
+  return new Intl.DateTimeFormat('zh-HK', {
+    timeZone: 'Asia/Hong_Kong',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).format(date);
 }
 
 function formatDateKey(yyyymmdd) {
@@ -101,9 +107,10 @@ function psrClass(psr) {
 }
 
 function setStatus(state, text) {
-  const el = $('statusReadout');
+  const el = $('refreshBtn');
   el.dataset.state = state;
   $('statusText').textContent = text;
+  el.setAttribute('aria-busy', state === 'loading' ? 'true' : 'false');
 }
 
 function showError(msg) {
@@ -304,7 +311,11 @@ function renderRain(rhr) {
   </tr>`).join('');
 }
 
+let loading = false;
+
 async function loadAll() {
+  if (loading) return;
+  loading = true;
   clearError();
   setStatus('loading', '更新緊…');
   $('refreshBtn').disabled = true;
@@ -319,11 +330,12 @@ async function loadAll() {
     renderForecast(fnd);
     renderStations(rhr);
     renderRain(rhr);
-    setStatus('ok', `上次成功更新 ${formatHk(new Date().toISOString())}`);
+    setStatus('ok', `上次成功更新 ${formatHkClock(new Date())}`);
   } catch (err) {
     console.error(err);
     showError(`讀取香港天文台資料失敗：${err.message || err}。請檢查網絡後再試。`);
   } finally {
+    loading = false;
     $('refreshBtn').disabled = false;
   }
 }
@@ -335,37 +347,38 @@ loadAll();
 setInterval(loadAll, REFRESH_MS);
 
 
-function setupCategoryNav() {
-  const links = [...document.querySelectorAll('.cat-nav__link')];
-  if (!links.length) return;
-  const sections = links
-    .map((a) => document.querySelector(a.getAttribute('href')))
-    .filter(Boolean);
-  const setActive = (id) => {
-    links.forEach((a) => {
-      a.classList.toggle('is-active', a.getAttribute('href') === `#${id}`);
-    });
-  };
-  if ('IntersectionObserver' in window && sections.length) {
-    const io = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible?.target?.id) setActive(visible.target.id);
-      },
-      { rootMargin: '-20% 0px -55% 0px', threshold: [0.1, 0.35, 0.6] }
-    );
-    sections.forEach((s) => io.observe(s));
+const VIEWS = ['now', 'forecast', 'districts'];
+
+function showView(id, historyMode) {
+  const view = VIEWS.includes(id) ? id : 'now';
+  for (const name of VIEWS) {
+    const section = $(name);
+    if (section) section.hidden = name !== view;
   }
-  links.forEach((a) => {
-    a.addEventListener('click', () => {
-      const id = a.getAttribute('href')?.slice(1);
-      if (id) setActive(id);
-    });
+  document.querySelectorAll('.cat-nav__link').forEach((btn) => {
+    const on = btn.getAttribute('data-view') === view;
+    btn.classList.toggle('is-active', on);
+    btn.setAttribute('aria-selected', on ? 'true' : 'false');
   });
-  setActive(sections[0]?.id || 'now');
+  const next = `#${view}`;
+  if (historyMode === 'push' && location.hash !== next) history.pushState(null, '', next);
+  if (historyMode === 'replace' && location.hash !== next) history.replaceState(null, '', next);
 }
 
+function setupCategoryNav() {
+  const tabs = [...document.querySelectorAll('.cat-nav__link')];
+  if (!tabs.length) return;
+  const initial = location.hash.replace('#', '');
+  showView(initial, VIEWS.includes(initial) ? 'none' : 'replace');
+  tabs.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      showView(btn.getAttribute('data-view'), 'push');
+      window.scrollTo(0, 0);
+    });
+  });
+  window.addEventListener('popstate', () => {
+    showView(location.hash.replace('#', ''), 'none');
+  });
+}
 
 setupCategoryNav();
