@@ -16,7 +16,7 @@
         <span class="brand__mark" aria-hidden="true"></span>
         <div>
           <h1>天氣概況</h1>
-          <p class="brand__subtitle">天文台 Open Data</p>
+          <p class="brand__subtitle">香港天文台 Open Data</p>
         </div>
       </div>
       <div class="toolbar">
@@ -27,16 +27,24 @@
         <label class="select-wrap" for="themeMode">
           <span class="visually-hidden">日夜模式</span>
           <select class="select" id="themeMode" title="日夜模式">
-            <option value="auto" selected>跟時間（香港）</option>
+            <option value="auto" selected>跟時間</option>
             <option value="day">日間</option>
             <option value="night">夜間</option>
           </select>
         </label>
         <span class="theme-chip" id="themeChip" aria-live="polite">日間</span>
-        <button type="button" class="btn btn--primary" id="refreshBtn">即刻更新</button>
+        <button type="button" class="btn btn--primary" id="refreshBtn">更新</button>
       </div>
     </div>
   </header>
+
+  <nav class="cat-nav" aria-label="內容分類">
+    <div class="container cat-nav__inner">
+      <a class="cat-nav__link" href="#now">而家</a>
+      <a class="cat-nav__link" href="#forecast">九天</a>
+      <a class="cat-nav__link" href="#districts">分區</a>
+    </div>
+  </nav>
 
   <main class="container workspace">
     <div id="errorBanner" class="alert-banner" hidden>
@@ -44,134 +52,149 @@
       <button type="button" class="btn" id="errorRetry">再試</button>
     </div>
 
-    <section id="warningStrip" class="warning-strip warning-strip--calm" hidden>
-      <div class="warning-strip__head">
-        <h2 class="warning-strip__title">天氣警告</h2>
-        <span class="panel__meta" id="warningMeta"></span>
+    <section id="now" class="category" aria-labelledby="nowTitle">
+      <div class="category__head">
+        <h2 id="nowTitle" class="category__title">而家天氣</h2>
+        <p class="category__sub">即時觀測 · 警告 · 概況</p>
       </div>
-      <ul class="warning-strip__list" id="warningList"></ul>
-    </section>
 
-    <section class="overview-grid" aria-label="而家天氣">
-      <article class="panel panel--primary">
-        <div class="obs-hero">
-          <div class="obs-hero__main">
-            <div class="wx-icon-frame">
-              <img id="currentIcon" alt="" width="40" height="40" />
-            </div>
-            <div>
-              <p class="obs-hero__station" id="currentStation">香港天文台</p>
-              <div class="obs-hero__reading">
-                <span class="obs-hero__temp num" id="currentTemp">—</span>
-                <span class="obs-hero__unit">°C</span>
+      <section id="warningStrip" class="warning-strip warning-strip--calm" hidden>
+        <div class="warning-strip__head">
+          <h2 class="warning-strip__title">天氣警告</h2>
+          <span class="panel__meta" id="warningMeta"></span>
+        </div>
+        <ul class="warning-strip__list" id="warningList"></ul>
+      </section>
+
+      <section class="overview-grid" aria-label="而家天氣詳情">
+        <article class="panel panel--primary">
+          <div class="obs-hero">
+            <div class="obs-hero__main">
+              <div class="wx-icon-frame">
+                <img id="currentIcon" alt="" width="40" height="40" />
+              </div>
+              <div>
+                <p class="obs-hero__station" id="currentStation">香港天文台</p>
+                <div class="obs-hero__reading">
+                  <span class="obs-hero__temp num" id="currentTemp">—</span>
+                  <span class="obs-hero__unit">°C</span>
+                </div>
               </div>
             </div>
+            <div class="obs-hero__range">
+              <span class="obs-hero__range-label">今日預測高低溫</span>
+              <span class="obs-hero__range-val num" id="todayRange">—</span>
+            </div>
           </div>
-          <div class="obs-hero__range">
-            <span class="obs-hero__range-label">今日預測高低溫</span>
-            <span class="obs-hero__range-val num" id="todayRange">—</span>
+          <div class="kpi-strip" role="list">
+            <div class="kpi-cell" role="listitem">
+              <span class="kpi-cell__label">相對濕度</span>
+              <span class="kpi-cell__val num" id="kpiHumidity">—<span class="kpi-cell__unit">%</span></span>
+              <span class="kpi-cell__sub" id="kpiHumidityPlace"></span>
+            </div>
+            <div class="kpi-cell" role="listitem">
+              <span class="kpi-cell__label">紫外線</span>
+              <span class="kpi-cell__val num" id="kpiUv">—</span>
+              <span class="kpi-cell__sub" id="kpiUvDesc"></span>
+            </div>
+            <div class="kpi-cell" role="listitem">
+              <span class="kpi-cell__label">一小時雨量（最高區）</span>
+              <span class="kpi-cell__val num" id="kpiRain">—<span class="kpi-cell__unit">mm</span></span>
+              <span class="kpi-cell__sub" id="kpiRainPlace"></span>
+            </div>
+            <div class="kpi-cell" role="listitem">
+              <span class="kpi-cell__label">資料更新</span>
+              <span class="kpi-cell__val" id="kpiUpdate" style="font-size:var(--text-sm)">—</span>
+              <span class="kpi-cell__sub" id="kpiIconTime"></span>
+            </div>
           </div>
-        </div>
-        <div class="kpi-strip" role="list">
-          <div class="kpi-cell" role="listitem">
-            <span class="kpi-cell__label">相對濕度</span>
-            <span class="kpi-cell__val num" id="kpiHumidity">—<span class="kpi-cell__unit">%</span></span>
-            <span class="kpi-cell__sub" id="kpiHumidityPlace"></span>
-          </div>
-          <div class="kpi-cell" role="listitem">
-            <span class="kpi-cell__label">紫外線</span>
-            <span class="kpi-cell__val num" id="kpiUv">—</span>
-            <span class="kpi-cell__sub" id="kpiUvDesc"></span>
-          </div>
-          <div class="kpi-cell" role="listitem">
-            <span class="kpi-cell__label">一小時雨量（最高區）</span>
-            <span class="kpi-cell__val num" id="kpiRain">—<span class="kpi-cell__unit">mm</span></span>
-            <span class="kpi-cell__sub" id="kpiRainPlace"></span>
-          </div>
-          <div class="kpi-cell" role="listitem">
-            <span class="kpi-cell__label">資料更新</span>
-            <span class="kpi-cell__val" id="kpiUpdate" style="font-size:var(--text-sm)">—</span>
-            <span class="kpi-cell__sub" id="kpiIconTime"></span>
-          </div>
-        </div>
-      </article>
+        </article>
 
-      <article class="panel panel--synopsis">
-        <div class="panel__head">
-          <h2>概況說明</h2>
-          <span class="panel__meta" id="synopsisMeta">九天預報說明</span>
-        </div>
-        <div class="synopsis-prose">
-          <p id="generalSituation">載入緊天文台概況…</p>
-        </div>
-        <div class="special-notes" id="specialNotes" hidden></div>
-      </article>
+        <article class="panel panel--synopsis">
+          <div class="panel__head">
+            <h3>概況說明</h3>
+            <span class="panel__meta" id="synopsisMeta">九天預報說明</span>
+          </div>
+          <div class="synopsis-prose">
+            <p id="generalSituation">載入緊天文台概況…</p>
+          </div>
+          <div class="special-notes" id="specialNotes" hidden></div>
+        </article>
+      </section>
     </section>
 
-    <section class="section-block" aria-labelledby="fndTitle">
-      <div class="section-block__head">
-        <div>
-          <h2 id="fndTitle">未來九天預報</h2>
-          <p class="section-block__sub">天文台九天天氣預報 · 溫度帶顯示當日高低溫區間</p>
-        </div>
-        <div class="legend-inline" aria-hidden="true">
-          <span class="legend-inline__item"><span class="swatch-line"></span> 溫度區間</span>
-          <span class="legend-inline__item"><span class="swatch-psr"></span> 降雨概率</span>
-        </div>
+    <section id="forecast" class="category" aria-labelledby="fndTitle">
+      <div class="category__head">
+        <h2 id="fndTitle" class="category__title">未來九天</h2>
+        <p class="category__sub">溫度帶顯示當日高低溫區間</p>
       </div>
-      <div class="fnd-ledger" id="fndLedger">
-        <div class="fnd-card fnd-card--head" aria-hidden="true">
-          <span>日期</span><span>圖示</span><span>天氣</span><span>溫度</span><span>濕度</span><span>降雨概率</span><span>風</span>
-        </div>
-      </div>
-    </section>
-
-    <section class="secondary-grid" aria-label="分區觀測">
-      <article class="section-block station-block">
+      <div class="section-block">
         <div class="section-block__head">
-          <div>
-            <h2>分區氣溫</h2>
-            <p class="section-block__sub">即時溫度 · 各自動氣象站</p>
+          <div class="legend-inline" aria-hidden="true">
+            <span class="legend-inline__item"><span class="swatch-line"></span> 溫度區間</span>
+            <span class="legend-inline__item"><span class="swatch-psr"></span> 降雨概率</span>
           </div>
         </div>
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th scope="col">地點</th>
-                <th scope="col" class="num">氣溫 (°C)</th>
-              </tr>
-            </thead>
-            <tbody id="stationBody">
-              <tr><td colspan="2" class="empty-state">載入緊…</td></tr>
-            </tbody>
-          </table>
+        <div class="fnd-ledger" id="fndLedger">
+          <div class="fnd-card fnd-card--head" aria-hidden="true">
+            <span>日期</span><span>圖示</span><span>天氣</span><span>溫度</span><span>濕度</span><span>降雨概率</span><span>風</span>
+          </div>
         </div>
-      </article>
+      </div>
+    </section>
 
-      <div class="rain-block">
-        <article class="section-block">
+    <section id="districts" class="category" aria-labelledby="districtsTitle">
+      <div class="category__head">
+        <h2 id="districtsTitle" class="category__title">分區觀測</h2>
+        <p class="category__sub">自動氣象站氣溫 · 一小時雨量</p>
+      </div>
+      <section class="secondary-grid" aria-label="分區表格">
+        <article class="section-block station-block">
           <div class="section-block__head">
             <div>
-              <h2>分區雨量</h2>
-              <p class="section-block__sub" id="rainWindow">過去一小時</p>
+              <h3>分區氣溫</h3>
+              <p class="section-block__sub">即時溫度 · 各自動氣象站</p>
             </div>
           </div>
           <div class="table-wrap">
             <table class="data-table">
               <thead>
                 <tr>
-                  <th scope="col">地區</th>
-                  <th scope="col" class="num">最高雨量 (mm)</th>
+                  <th scope="col">地點</th>
+                  <th scope="col" class="num">氣溫 (°C)</th>
                 </tr>
               </thead>
-              <tbody id="rainBody">
+              <tbody id="stationBody">
                 <tr><td colspan="2" class="empty-state">載入緊…</td></tr>
               </tbody>
             </table>
           </div>
         </article>
-      </div>
+
+        <div class="rain-block">
+          <article class="section-block">
+            <div class="section-block__head">
+              <div>
+                <h3>分區雨量</h3>
+                <p class="section-block__sub" id="rainWindow">過去一小時</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th scope="col">地區</th>
+                    <th scope="col" class="num">最高雨量 (mm)</th>
+                  </tr>
+                </thead>
+                <tbody id="rainBody">
+                  <tr><td colspan="2" class="empty-state">載入緊…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </section>
     </section>
   </main>
 
